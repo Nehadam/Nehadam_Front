@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "516065174839",
+    "firebase_url": "https://nehadam-b5c09-default-rtdb.firebaseio.com",
+    "project_id": "nehadam-b5c09",
+    "storage_bucket": "nehadam-b5c09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516065174839:android:a2b713f40dbb182a7aa6b2",
+        "android_client_info": {
+          "package_name": "com.example.u_nehadam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "516065174839-4mvtn1ro73jvujd1stqbdp9c2c1ct7tt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBpr8m1e2juDOOkJjfnehkEH5QTETeIDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "516065174839-4mvtn1ro73jvujd1stqbdp9c2c1ct7tt.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "516065174839-bddu46rraojj08l9hphgdlie389jbven.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.Nehadam"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
