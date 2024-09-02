@@ -22,8 +22,10 @@ class ThemeCard extends StatelessWidget {
             Image.asset(imagePath, height: 200, width: 200, fit: BoxFit.cover),
             const SizedBox(height: 30),
             Text(title,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'NanumPenScript')),
           ],
         ),
       ),

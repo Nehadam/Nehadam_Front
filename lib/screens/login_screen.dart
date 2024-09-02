@@ -63,7 +63,7 @@ class _LoginState extends State<LoginScreen> {
                           ),
                           const Expanded(
                             child: Text(
-                              "Sign in with google",
+                              "Sign in with Google",
                               style:
                                   TextStyle(color: Colors.grey, fontSize: 17),
                               textAlign: TextAlign.center,
@@ -75,20 +75,6 @@ class _LoginState extends State<LoginScreen> {
                 const SizedBox(
                   height: 80,
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const MainFrameScreen()));
-                  },
-                  child: const Text(
-                    "게스트로 로그인하기",
-                    style: TextStyle(
-                      fontFamily: 'NanumPenScript',
-                    ),
-                  ),
-                )
               ],
             ),
           ),
@@ -98,11 +84,16 @@ class _LoginState extends State<LoginScreen> {
   }
 
   void signInWithGoogle() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    // 로그아웃하여 계정 선택을 강제합니다.
+    await googleSignIn.signOut();
+
     // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
     if (googleUser == null) {
-      return;
+      return; // 사용자가 로그인을 취소한 경우 처리
     }
 
     // Obtain the auth details from the request

@@ -40,7 +40,7 @@ class FilterSelectButton extends StatelessWidget {
             context: context,
             builder: (BuildContext context) => AlertDialog(
               content: const Text('필터를 선택했습니다.',
-                  style: TextStyle(fontFamily: 'NanumPenScript')),
+                  style: TextStyle(fontSize: 20, fontFamily: 'NanumPenScript')),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.pop(context, 'OK'),

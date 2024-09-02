@@ -12,7 +12,7 @@ class ThemeSelectionScreen extends StatefulWidget {
 
 class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
   final PageController _pageController = PageController();
-  final int _numberOfPages = 2; // Adjust this if you add more ThemeCards
+  final int _numberOfPages = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +31,14 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                     Provider.of<Image_State>(context, listen: false)
                         .updateimage_FilterPath(
                             'assets/data/filters/cartoon.jpg');
+                    Provider.of<Image_State>(context, listen: false)
+                        .updateSelectedTheme('Cartoon');
                     showDialog<String>(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
                         content: const Text('필터를 선택했습니다.',
-                            style: TextStyle(fontFamily: 'NanumPenScript')),
+                            style: TextStyle(
+                                fontSize: 20, fontFamily: 'NanumPenScript')),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () => Navigator.pop(context, 'OK'),
@@ -50,6 +53,8 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                   title: 'AI',
                   imagePath: 'assets/data/filters/scream.jpg',
                   onTap: () {
+                    Provider.of<Image_State>(context, listen: false)
+                        .updateSelectedTheme('AI');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -59,7 +64,30 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                     );
                   },
                 ),
-                // Add more ThemeCards as needed
+                ThemeCard(
+                  title: 'life',
+                  imagePath: 'assets/data/filters/life.jpg',
+                  onTap: () {
+                    Provider.of<Image_State>(context, listen: false)
+                        .updateimage_FilterPath('assets/data/filters/life.jpg');
+                    Provider.of<Image_State>(context, listen: false)
+                        .updateSelectedTheme('life');
+                    showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        content: const Text('필터를 선택했습니다.',
+                            style: TextStyle(
+                                fontSize: 20, fontFamily: 'NanumPenScript')),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, 'OK'),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             Positioned(
@@ -68,7 +96,6 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
                   if (_pageController.page == 0) {
-                    // If it's the first page, go to the last page
                     _pageController.animateToPage(
                       _numberOfPages - 1,
                       duration: const Duration(milliseconds: 300),
@@ -89,7 +116,6 @@ class _ThemeSelectionScreenState extends State<ThemeSelectionScreen> {
                 icon: const Icon(Icons.arrow_forward),
                 onPressed: () {
                   if (_pageController.page == _numberOfPages - 1) {
-                    // If it's the last page, go to the first page
                     _pageController.animateToPage(
                       0,
                       duration: const Duration(milliseconds: 300),
