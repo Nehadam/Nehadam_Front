@@ -159,14 +159,24 @@ class _UserNameScreenState extends State<UserNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0XFF9CB5DE), // 배경 색상
       appBar: AppBar(
+        backgroundColor: const Color(0XFF9CB5DE), // 배경 색상
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white), // 원하는 아이콘
+          onPressed: () {
+            Navigator.pop(context); // 뒤로가기 기능
+          },
+        ),
         title: const Text(
           '닉네임 변경',
           style: TextStyle(
             fontFamily: 'NanumPenScript',
+            color: Colors.white,
           ),
         ),
       ),
+
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
@@ -176,26 +186,77 @@ class _UserNameScreenState extends State<UserNameScreen> {
                 minHeight: constraints.maxHeight,
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+                  const SizedBox(
+                    height: 25,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20.0, horizontal: 20.0), // 컨테이너의 내부 여백
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 20.0), // 컨테이너의 외부 여백
+                    decoration: BoxDecoration(
+                      color: const Color(0XFF9CB5DE), // 배경 색상
+                      borderRadius: BorderRadius.circular(15), // 모서리 둥글기
+                      border: Border.all(
+                        color: Colors.white, width: 5.0, // 테두리 두께
+                      ),
+                    ),
+                    child: const Column(
+                      children: [
+                        Text(
+                          '네하담',
+                          style: TextStyle(
+                            fontSize: 40, // 네하담 글씨 크기
+                            fontWeight: FontWeight.bold, // 글씨 두께
+                            color: Colors.white, // 배경 색상
+                          ),
+                        ),
+                        SizedBox(height: 10), // 네하담과 내일의 하루를 담다 사이의 간격
+                        Text(
+                          '네컷에 하루를 담아요',
+                          style: TextStyle(
+                            fontSize: 14, // 내일의 하루를 담다 글씨 크기
+                            fontWeight: FontWeight.normal, // 글씨 두께
+                            color: Colors.white, // 배경 색상
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 25,
+                  ),
                   TextField(
                     controller: _nameController,
                     decoration: const InputDecoration(
                       labelText: '닉네임 입력',
                       labelStyle: TextStyle(
                         fontFamily: 'NanumPenScript',
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold, // 글씨 두께
+                        fontSize: 24,
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white), // 기본 밑줄 색상
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.white), // 포커스된 밑줄 색상
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _saveUserName,
-                    child: const Text(
-                      '저장',
-                      style: TextStyle(
-                        fontFamily: 'NanumPenScript',
-                      ),
-                    ),
+                    child: const Text("저장",
+                        style: TextStyle(
+                          fontFamily: 'NanumPenScript',
+                          color: Color(0XFF334F78),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        )),
                   ),
                 ],
               ),

@@ -9,8 +9,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // Variable to control the opacity of the image
-  double _imageOpacity = 0.0;
+  // Variable to control the opacity of the text
+  double _textOpacity = 0.0;
 
   @override
   void initState() {
@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     // Delay for 1 second, then start the fade-in animation
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
-        _imageOpacity = 1.0; // Make the image fully visible
+        _textOpacity = 1.0; // Make the text fully visible
       });
     });
 
@@ -55,27 +55,34 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedOpacity(
-                  opacity: _imageOpacity,
-                  duration: const Duration(seconds: 1), // Fade-in duration
-                  child: Image.asset(
-                    'assets/img/main_nehadam.jpg',
-                    width: 160,
-                    height: 250,
-                  ),
+    return Scaffold(
+      backgroundColor: const Color(0XFF9CB5DE),
+      body: Center(
+        child: AnimatedOpacity(
+          opacity: _textOpacity,
+          duration: const Duration(seconds: 1), // Fade-in duration
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '네하담',
+                style: TextStyle(
+                  fontSize: 40, // 네하담 글씨 크기
+                  fontWeight: FontWeight.bold, // 글씨 두께
+                  color: Colors.white, // 글씨 색깔
                 ),
-              ],
-            ),
-          ],
+              ),
+              SizedBox(height: 10), // 네하담과 내일의 하루를 담다 사이의 간격
+              Text(
+                '네컷에 하루를 담아요',
+                style: TextStyle(
+                  fontSize: 14, // 내일의 하루를 담다 글씨 크기
+                  fontWeight: FontWeight.normal, // 글씨 두께
+                  color: Colors.white, // 글씨 색깔
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

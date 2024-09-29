@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:_nehadam/screens/camera_screen.dart';
 import 'package:_nehadam/screens/filterView_screeen.dart';
-import 'package:_nehadam/screens/home_screen.dart';
 import 'package:_nehadam/screens/myPage_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainFrameScreen extends StatefulWidget {
@@ -19,209 +19,151 @@ class _MainFrameScreenState extends State<MainFrameScreen>
   int _selectedIndex = 0;
   Timer? _timer;
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    const HomeScreen(),
-    const CameraScreen(),
+  final List<Widget> _screens = [
     const ThemeSelectionScreen(),
+    const Placeholder(), // CameraScreen's Placeholder
     const MyPageScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 생명주기 관찰 시작
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkFirstTimeUser(); // 앱 처음 실행 시 튜토리얼 확인
-    });
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // 생명주기 관찰 해제
-    _timer?.cancel(); // 타이머가 있을 경우 해제
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      // 앱이 백그라운드로 갈 때만 튜토리얼 상태를 초기화
       _resetTutorialSeenState();
     }
   }
 
   Future<void> _resetTutorialSeenState() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasSeenTutorial', false); // 초기화
-  }
-
-  Future<void> _checkFirstTimeUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    bool? hasSeenTutorial = prefs.getBool('hasSeenTutorial');
-
-    if (hasSeenTutorial == null || !hasSeenTutorial) {
-      _showTutorialDialog();
-      await prefs.setBool('hasSeenTutorial', true);
-    }
-  }
-
-  void _showTutorialDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: const SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '어플 사용 방법',
-                  style: TextStyle(
-                    color: Color(0xff324755),
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  '1. 앱에 로그인하기',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '앱에 로그인하고 닉네임을 변경하세요',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 30),
-                Text(
-                  '2. 필터 선택',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '원하는 필터를 선택하세요.',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 30),
-                Text(
-                  '3. 갤러리 및 드라이브에서 사진을 선택',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '변환하고 싶은 사진을 선택하세요.',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 30),
-                Text(
-                  '4. 이미지 저장',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '이미지의 이름을 짓고 이를 저장하여 사용하세요.(프로필 메뉴에서 튜토리얼을 다시 볼 수 있습니다.)',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontFamily: 'NanumPenScript',
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                '닫기',
-                style: TextStyle(
-                  fontFamily: 'NanumPenScript',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    await prefs.setBool('hasSeenTutorial', false);
   }
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      if (index == 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainFrameScreen(),
+          ),
+        );
+      } else {
+        _selectedIndex = index;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _screens[0],
+          if (_selectedIndex == 1) const CameraScreen() else _screens[1],
+          _screens[2],
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 2,
-        items: const <BottomNavigationBarItem>[
+        backgroundColor: const Color.fromARGB(
+            255, 237, 241, 247), // Set the background color here
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-            backgroundColor: Colors.blue,
+            icon: _selectedIndex == 0
+                ? Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      border:
+                          Border.all(color: const Color(0xFF334f78), width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/img/Image.svg', // Path to your SVG file
+                      height: 24,
+                      width: 24,
+                    ),
+                  )
+                : SvgPicture.asset(
+                    'assets/img/Image.svg', // Path to your SVG file
+                    height: 24,
+                    width: 24,
+                  ),
+            label: '', // Provide an empty label
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_a_photo_outlined),
-            label: 'camera',
-            backgroundColor: Colors.blue,
+            icon: _selectedIndex == 1
+                ? Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      border:
+                          Border.all(color: const Color(0xFF334f78), width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/img/Camera.svg', // Path to your SVG file
+                      height: 24,
+                      width: 24,
+                    ),
+                  )
+                : SvgPicture.asset(
+                    'assets/img/Camera.svg', // Path to your SVG file
+                    height: 24,
+                    width: 24,
+                  ),
+            label: '', // Provide an empty label
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.color_lens_outlined),
-            label: 'Search',
-            backgroundColor: Colors.blue,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.manage_accounts_outlined),
-            label: 'Profile',
-            backgroundColor: Colors.blue,
+            icon: _selectedIndex == 2
+                ? Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      border:
+                          Border.all(color: const Color(0xFF334f78), width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SvgPicture.asset(
+                      'assets/img/Profile.svg', // Path to your SVG file
+                      height: 24,
+                      width: 24,
+                    ),
+                  )
+                : SvgPicture.asset(
+                    'assets/img/Profile.svg', // Path to your SVG file
+                    height: 24,
+                    width: 24,
+                  ),
+            label: '', // Provide an empty label
           ),
         ],
         currentIndex: _selectedIndex,
+        selectedItemColor:
+            const Color(0xFF334f78), // To change the selected icon color
+        unselectedItemColor:
+            const Color(0xFF334f78), // To change the unselected icon color
         onTap: _onItemTapped,
+        showSelectedLabels: false, // Hide the labels
+        showUnselectedLabels: false, // Hide the labels
       ),
     );
   }
 }
+
+// Define the custom TextStyle and Colors
+const TextStyle _dialogButtonStyle = TextStyle(
+  fontFamily: 'NanumPenScript',
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+);

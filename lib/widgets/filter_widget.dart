@@ -1,20 +1,24 @@
-import 'package:_nehadam/states/image_state.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class FilterWidget extends StatelessWidget {
   final String filter_name, image, id;
+  final Function(String) onFilterSelected; // 콜백 함수 추가
 
   const FilterWidget({
     super.key,
     required this.filter_name,
     required this.image,
     required this.id,
+    required this.onFilterSelected, // 콜백 함수 초기화
   });
 
   @override
   Widget build(BuildContext context) {
-    return FilterSelectButton(image: image, filter_name: filter_name);
+    return FilterSelectButton(
+      image: image,
+      filter_name: filter_name,
+      onFilterSelected: onFilterSelected, // 콜백 함수 전달
+    );
   }
 }
 
@@ -23,10 +27,12 @@ class FilterSelectButton extends StatelessWidget {
     super.key,
     required this.image,
     required this.filter_name,
+    required this.onFilterSelected, // 콜백 함수 전달
   });
 
   final String image;
   final String filter_name;
+  final Function(String) onFilterSelected; // 콜백 함수 정의
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +40,7 @@ class FilterSelectButton extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
         onTap: () {
-          Provider.of<Image_State>(context, listen: false)
-              .updateimage_FilterPath(image);
-          showDialog<String>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              content: const Text('필터를 선택했습니다.',
-                  style: TextStyle(fontSize: 20, fontFamily: 'NanumPenScript')),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context, 'OK'),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
+          onFilterSelected(image); // 필터 선택 시 콜백 함수 호출
         },
         child: Column(
           children: [
@@ -62,7 +54,7 @@ class FilterSelectButton extends StatelessWidget {
                     blurRadius: 15,
                     offset: const Offset(10, 10),
                     color: Colors.black.withOpacity(0.15),
-                  )
+                  ),
                 ],
               ),
               child: Image.asset(image),
@@ -79,7 +71,7 @@ class FilterSelectButton extends StatelessWidget {
             ),
             const SizedBox(
               height: 50,
-            )
+            ),
           ],
         ),
       ),

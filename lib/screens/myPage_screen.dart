@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:_nehadam/screens/frameChoice_screen.dart';
 import 'package:_nehadam/screens/imagegallery_screen.dart'; // 새로 추가된 화면 import
 import 'package:_nehadam/screens/myPage_detail_screen/mypage_rule.dart';
 import 'package:_nehadam/screens/mytutorial_screen.dart';
@@ -18,7 +17,27 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
-  String? _selectedImageUrl; // 선택된 이미지 URL을 저장하는 변수
+  Future<String?> _fetchRepresentativeImage() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    final String email = user?.email ?? '';
+
+    try {
+      var url = Uri.parse(
+          'http://4hadam.ddns.net:8080/api/$email/images/representative-image');
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        return data['fileurl'];
+      } else {
+        print('Failed to load representative image');
+        return null;
+      }
+    } catch (e) {
+      print('Error: $e');
+      return null;
+    }
+  }
 
   Future<String> _fetchUserName(String email) async {
     try {
@@ -36,11 +55,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
         var data = json.decode(decodedResponse);
         return data['username'] ?? 'Unknown User';
       } else {
-        return 'Error fetching username';
+        return '에러가 발생했습니다. 재접속시 해결됩니다.';
       }
     } catch (e) {
       print('Error: $e');
-      return 'Error fetching username';
+      return '에러가 발생했습니다. 재접속시 해결됩니다.';
     }
   }
 
@@ -62,17 +81,17 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 'Loading...',
                 style: TextStyle(
                   color: Color(0xff324755),
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'NanumPenScript',
                 ),
               );
             } else if (snapshot.hasError) {
               return const Text(
-                'Error',
+                '재접속 바랍니다.',
                 style: TextStyle(
                   color: Color(0xff324755),
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'NanumPenScript',
                 ),
@@ -85,7 +104,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     snapshot.data ?? 'hadam',
                     style: const TextStyle(
                       color: Color(0xff324755),
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'NanumPenScript',
                     ),
@@ -115,49 +134,53 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
                     if (selectedImageUrl != null) {
                       setState(() {
-                        _selectedImageUrl = selectedImageUrl;
+                        // Update the image URL locally to reflect the selected image
+                        // You may also want to update the representative image on the server
                       });
                     }
                   },
-                  child: _selectedImageUrl != null
-                      ? Image.network(
-                          _selectedImageUrl!,
+                  child: FutureBuilder<String?>(
+                    future: _fetchRepresentativeImage(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError || snapshot.data == null) {
+                        return Image.asset(
+                          'assets/data/frames/polaroid_click.png',
+                        );
+                      } else {
+                        return Image.network(
+                          snapshot.data!,
                           fit: BoxFit.cover,
-                        )
-                      : Image.asset(
-                          'assets/data/frames/polaroid_click.jpg',
-                        ),
+                        );
+                      }
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               const SizedBox(height: 20),
               const MyPageWidget(
                 title: '닉네임 변경',
-                iconname: Icons.account_circle,
+                iconname: Icons.account_circle_outlined,
                 screenToMove: UserNameScreen(),
               ),
               const SizedBox(height: 20),
               const MyPageWidget(
-                title: '프레임 구경하기',
-                iconname: Icons.edit,
-                screenToMove: FrameChoiceScreen(),
-              ),
-              const SizedBox(height: 20),
-              const MyPageWidget(
                 title: '어플 사용 방법',
-                iconname: Icons.info,
+                iconname: Icons.info_outline,
                 screenToMove: MyTutorialScreen(),
               ),
               const SizedBox(height: 20),
               const MyPageWidget(
                 title: '이용약관',
-                iconname: Icons.description,
+                iconname: Icons.description_outlined,
                 screenToMove: mypagerule(),
               ),
               const SizedBox(height: 20),
               const MyPageWidget(
                 title: '개인정보처리방침',
-                iconname: Icons.book,
+                iconname: Icons.book_outlined,
                 screenToMove: mypagerule2(),
               ),
               const SizedBox(height: 20),

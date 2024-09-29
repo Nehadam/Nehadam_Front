@@ -14,47 +14,83 @@ class CameraScreen extends StatefulWidget {
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
-  late CameraController _controller;
-  late Future<void> _initializeControllerFuture;
+class _CameraScreenState extends State<CameraScreen>
+    with WidgetsBindingObserver {
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
   bool _isTakingPicture = false;
   double _currentZoomLevel = 1.0;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   bool _isRearCameraSelected = true;
   XFile? _capturedImage;
+  double _baseZoomLevel = 1.0;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeCamera(); // 카메라 초기화
   }
 
-  Future<void> _initializeCamera() async {
-    if (await Permission.camera.request().isGranted) {
+  Future<void> _initializeCamera({int retryCount = 0}) async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
       try {
         final cameras = await availableCameras();
+        if (_controller != null) {
+          await _controller?.dispose();
+        }
         _controller = CameraController(
           cameras[_isRearCameraSelected ? 0 : 1],
           ResolutionPreset.high,
         );
 
-        _initializeControllerFuture = _controller.initialize();
+        _initializeControllerFuture = _controller!.initialize();
 
         await _initializeControllerFuture;
 
-        _minAvailableZoom = await _controller.getMinZoomLevel();
-        _maxAvailableZoom = await _controller.getMaxZoomLevel();
+        _minAvailableZoom = await _controller!.getMinZoomLevel();
+        _maxAvailableZoom = await _controller!.getMaxZoomLevel();
 
         if (!mounted) return;
 
-        setState(() {});
+        setState(() {}); // 상태를 업데이트하여 UI에 반영
       } catch (e) {
-        _showErrorDialog('Camera Initialization Error', e.toString());
+        _controller?.dispose(); // 오류 발생 시 컨트롤러 해제
+        _controller = null;
+
+        if (retryCount < 3) {
+          // 3번까지 재시도
+          await Future.delayed(const Duration(seconds: 1));
+          _initializeCamera(retryCount: retryCount + 1);
+        } else {
+          _showErrorDialog('Camera Initialization Error', e.toString());
+        }
       }
+    } else if (status.isPermanentlyDenied) {
+      _showErrorDialog('카메라 권한 거부', '카메라 권한을 허용해주세요.');
+      openAppSettings(); // 권한이 영구적으로 거부된 경우 설정으로 이동
     } else {
-      _showErrorDialog(
-          'Permission Error', 'Camera permission was not granted.');
+      _showErrorDialog('카메라 권한 에러', '카메라 권한이 제대로 설정되어 있는지 확인해주세요.');
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _controller?.dispose();
+      _controller = null;
+    } else if (state == AppLifecycleState.resumed) {
+      _initializeCamera();
     }
   }
 
@@ -64,39 +100,48 @@ class _CameraScreenState extends State<CameraScreen> {
       body: Stack(
         children: [
           _capturedImage == null
-              ? Center(
-                  child: FutureBuilder<void>(
-                    future: _initializeControllerFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return Center(
+              ? FutureBuilder<void>(
+                  future: _initializeControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return GestureDetector(
+                        onScaleStart: (details) {
+                          _baseZoomLevel = _currentZoomLevel;
+                        },
+                        onScaleUpdate: (details) {
+                          setState(() {
+                            _currentZoomLevel = (_baseZoomLevel *
+                                    details.scale.clamp(
+                                        _minAvailableZoom, _maxAvailableZoom))
+                                .clamp(_minAvailableZoom, _maxAvailableZoom);
+                            _controller?.setZoomLevel(_currentZoomLevel);
+                          });
+                        },
+                        child: Center(
                           child: AspectRatio(
-                            aspectRatio: 1, // 카메라 미리보기 1:1 비율로 설정
-                            child: GestureDetector(
-                              onScaleUpdate: (details) async {
-                                double newZoomLevel =
-                                    _currentZoomLevel * details.scale;
-                                newZoomLevel = newZoomLevel.clamp(
-                                    _minAvailableZoom, _maxAvailableZoom);
-
-                                setState(() {
-                                  _currentZoomLevel = newZoomLevel;
-                                });
-
-                                await _controller
-                                    .setZoomLevel(_currentZoomLevel);
-                              },
-                              child: CameraPreview(_controller),
+                            aspectRatio: 1,
+                            child: ClipRect(
+                              child: Transform.scale(
+                                scale: _controller!.value.aspectRatio,
+                                child: Center(
+                                  child: AspectRatio(
+                                    aspectRatio:
+                                        1 / _controller!.value.aspectRatio,
+                                    child: CameraPreview(_controller!),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Text('Camera error: ${snapshot.error}');
-                      } else {
-                        return const CircularProgressIndicator();
-                      }
-                    },
-                  ),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                          child: Text('Camera error: ${snapshot.error}'));
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
                 )
               : ImagePreviewScreen(
                   capturedImage: _capturedImage!,
@@ -119,10 +164,11 @@ class _CameraScreenState extends State<CameraScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 2),
+                  border: Border.all(color: const Color(0XFF9CB5DE), width: 2),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.loop, size: 30, color: Colors.black),
+                  icon: const Icon(Icons.loop,
+                      size: 30, color: Color(0XFF9CB5DE)),
                   onPressed: _toggleCameraLens,
                 ),
               ),
@@ -133,17 +179,20 @@ class _CameraScreenState extends State<CameraScreen> {
       floatingActionButton: _capturedImage == null
           ? Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
-              child: FloatingActionButton(
-                heroTag: "takePicture",
-                backgroundColor: Colors.white,
-                shape: const CircleBorder(
-                    side: BorderSide(color: Colors.black, width: 4)),
-                onPressed: _isTakingPicture
-                    ? null
-                    : () async {
-                        await _takePicture();
-                      },
-                child: const Icon(Icons.camera_alt, color: Colors.black),
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: FloatingActionButton(
+                  heroTag: "takePicture",
+                  backgroundColor: Colors.white,
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Color(0XFF9CB5DE), width: 4)),
+                  onPressed: _isTakingPicture
+                      ? null
+                      : () async {
+                          await _takePicture();
+                        },
+                ),
               ),
             )
           : Padding(
@@ -155,7 +204,8 @@ class _CameraScreenState extends State<CameraScreen> {
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.white,
                       shape: const CircleBorder(),
-                      side: const BorderSide(color: Colors.black, width: 4),
+                      side:
+                          const BorderSide(color: Color(0XFF9CB5DE), width: 4),
                       padding: const EdgeInsets.all(20),
                     ),
                     onPressed: () async {
@@ -164,14 +214,15 @@ class _CameraScreenState extends State<CameraScreen> {
                         _capturedImage = null;
                       });
                     },
-                    child: const Icon(Icons.save_alt, color: Colors.black),
+                    child: const Icon(Icons.save_alt, color: Color(0XFF9CB5DE)),
                   ),
                   const SizedBox(width: 60),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.white,
                       shape: const CircleBorder(),
-                      side: const BorderSide(color: Colors.black, width: 4),
+                      side:
+                          const BorderSide(color: Color(0XFF9CB5DE), width: 4),
                       padding: const EdgeInsets.all(20),
                     ),
                     onPressed: () {
@@ -179,7 +230,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         _capturedImage = null;
                       });
                     },
-                    child: const Icon(Icons.replay, color: Colors.black),
+                    child: const Icon(Icons.replay, color: Color(0XFF9CB5DE)),
                   ),
                 ],
               ),
@@ -194,7 +245,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     try {
       await _initializeControllerFuture;
-      final image = await _controller.takePicture();
+      final image = await _controller!.takePicture();
       setState(() {
         _capturedImage = image;
       });
@@ -210,11 +261,9 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _saveCroppedImage(XFile file) async {
     try {
-      // Load the image
       final bytes = await file.readAsBytes();
       final originalImage = await decodeImageFromList(bytes);
 
-      // Calculate crop dimensions for 1:1 aspect ratio
       final originalWidth = originalImage.width.toDouble();
       final originalHeight = originalImage.height.toDouble();
       double cropSize =
@@ -223,7 +272,6 @@ class _CameraScreenState extends State<CameraScreen> {
       final left = (originalWidth - cropSize) / 2;
       final top = (originalHeight - cropSize) / 2;
 
-      // Create a new image with a 1:1 aspect ratio
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
       final srcRect = Rect.fromLTWH(left, top, cropSize, cropSize);
@@ -236,7 +284,6 @@ class _CameraScreenState extends State<CameraScreen> {
       final pngBytes =
           await croppedImage.toByteData(format: ui.ImageByteFormat.png);
 
-      // Save the cropped image to the gallery
       final result = await ImageGallerySaver.saveImage(
         Uint8List.view(pngBytes!.buffer),
         name: DateTime.now().toIso8601String(),
@@ -262,25 +309,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void _showErrorDialog(String title, String content) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+    _initializeCamera(); // 오류 발생 시 카메라 재실행
   }
 }
 
@@ -302,7 +331,6 @@ class ImagePreviewScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Aspect ratio 1:1 for preview
           AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -311,7 +339,7 @@ class ImagePreviewScreen extends StatelessWidget {
               ),
               child: Image.file(
                 File(capturedImage.path),
-                fit: BoxFit.cover, // 이미지가 1:1 화면을 넘지 않도록
+                fit: BoxFit.cover,
               ),
             ),
           ),

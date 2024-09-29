@@ -58,6 +58,9 @@ dependencies:
   convert: ^3.1.1
   shared_preferences: ^2.2.3
   http_parser: ^4.0.2
+  auth_buttons: ^3.0.2
+  flutter_svg: ^2.0.10+1
+  image: ^4.2.0
 
 dev_dependencies:
   flutter_test:
@@ -87,7 +90,8 @@ flutter:
     - assets/data/frames/
     - assets/data/filters/
     - assets/data/results/
-    - assets/data/contents/    
+    - assets/data/contents/
+    - assets/frame/    
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

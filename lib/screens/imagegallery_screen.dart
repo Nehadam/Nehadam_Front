@@ -67,6 +67,30 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
     }
   }
 
+  Future<void> _setRepresentativeImage(String imageId) async {
+    try {
+      final uri = Uri.parse(
+              'http://4hadam.ddns.net:8080/api/${widget.email}/images/set-representative-image')
+          .replace(queryParameters: {'imageId': imageId});
+
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        print('Representative image set successfully');
+        Navigator.pop(context, _selectedImageUrl);
+      } else {
+        print(
+            'Failed to set representative image. Server responded with status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,13 +159,13 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
                   bottom: 20,
                   left: 20,
                   child: FloatingActionButton.extended(
-                    onPressed: _selectedImageUrl != null
+                    onPressed: _selectedImageId != null
                         ? () {
-                            Navigator.pop(context, _selectedImageUrl);
+                            _setRepresentativeImage(_selectedImageId!);
                           }
                         : null,
                     backgroundColor:
-                        _selectedImageUrl != null ? Colors.blue : Colors.white,
+                        _selectedImageId != null ? Colors.blue : Colors.white,
                     label: const Text('대표 프로필 사진으로 변경'),
                     icon: const Icon(Icons.check),
                   ),
