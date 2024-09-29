@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final selectedTheme = filterImageState.selectedTheme;
 
     return Scaffold(
+      backgroundColor: Colors.white60,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
@@ -63,12 +64,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                           child: _selectedImage == null
                               ? const Text(
-                                  "여기에서\n이미지 선택하기",
+                                  "원본\n이미지 선택",
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontFamily: 'NanumPenScript',
                                     fontWeight: FontWeight.w500,
                                     fontSize: 20,
+                                    color: Colors.grey,
                                   ),
                                 )
                               : Image.memory(_selectedImage!),
@@ -103,9 +105,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   onPressed: () =>
                       _uploadImages(context, selectedTheme, _selectedImage),
                   child: const Text(
-                    "변환하기",
+                    "변환",
                     style: TextStyle(
                       fontFamily: 'NanumPenScript',
+                      fontSize: 25,
                     ),
                   ),
                 ),

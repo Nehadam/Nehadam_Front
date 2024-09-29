@@ -201,22 +201,22 @@ class _MainFrameScreenState extends State<MainFrameScreen>
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-            backgroundColor: Colors.white10,
+            backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_a_photo_outlined),
             label: 'camera',
-            backgroundColor: Colors.white10,
+            backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.color_lens_outlined),
             label: 'Search',
-            backgroundColor: Colors.white10,
+            backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.manage_accounts_outlined),
             label: 'Profile',
-            backgroundColor: Colors.white10,
+            backgroundColor: Colors.blue,
           ),
         ],
         currentIndex: _selectedIndex,
